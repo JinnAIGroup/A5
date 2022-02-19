@@ -14,22 +14,24 @@ import numpy as np
 from matplotlib import pyplot as plt
 from cameraB5 import transform_img, eon_intrinsics, medmodel_intrinsics
 
-def visualize(image):
-    plt.figure(figsize=(10, 10))
-    plt.axis('off')
-    plt.imshow(image)
-    plt.show()
-
 def RGB_to_sYUV(img):
-    visualize(img)
     bYUV = cv2.cvtColor(img, cv2.COLOR_RGB2YUV_I420)
-    visualize(bYUV)
       #---  np.shape(bYUV) = (1311, 1164)
       #print("#---  bYUV =", bYUV)   # check YUV: [0, 255]? Yes.
     sYUV = np.zeros((384, 512), dtype=np.uint8) # np.uint8 = 0~255
     sYUV = transform_img(bYUV, from_intr=eon_intrinsics, to_intr=medmodel_intrinsics,
                          yuv=True, output_size=(512, 256))  # (W, H)
-    visualize(sYUV)
+    plt.clf()
+    plt.subplot(131)
+    plt.title("RGB Image 874x1164")
+    plt.imshow(img)
+    plt.subplot(132)
+    plt.title("Big YUV 1311x1164")
+    plt.imshow(bYUV)
+    plt.subplot(133)
+    plt.title("Small YUV 384x512")
+    plt.imshow(sYUV)
+    plt.show()
     return sYUV
 
 def sYUV_to_CsYUV(sYUV):
@@ -45,7 +47,7 @@ def sYUV_to_CsYUV(sYUV):
     CsYUV[5] = sYUV[H+H//4:H+H//2].reshape((-1, H//2, W//2))
 
     CsYUV = np.array(CsYUV).astype(np.float32)   # RGB: [0, 255], YUV: [0, 255] => float32 (see __kernel void loadys())
-      #visualize(CsYUV)   # TypeError: Invalid shape (6, 128, 256). We cannot visulize it. 
+      #visualize(CsYUV)   # TypeError: Invalid shape (6, 128, 256). We cannot visulize it.
     return CsYUV
 
 def rgb2yuv(img):
