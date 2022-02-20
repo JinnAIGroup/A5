@@ -1,4 +1,4 @@
-"""   YPL, JLL, 2021.9.15 - 2022.2.19
+"""   YPL, JHT, JLL, 2021.9.15 - 2022.2.20
 for modelA5 = modelAB = UNet + RNN + PoseNet
 from /home/jinn/YPN/ABNet/datagenAB2A.py
 
@@ -38,6 +38,7 @@ import cv2
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
+from cameraB5 import transform_img, eon_intrinsics, medmodel_intrinsics
 from rgb2yuvA5 import rgb2yuv
 
 def concatenate(img, msk, mask_H, mask_W, class_values):
@@ -47,10 +48,21 @@ def concatenate(img, msk, mask_H, mask_W, class_values):
           #---  yuvCV2.shape = (6, 128, 256)
         mskCV2 = cv2.imread(msk, 0).astype('uint8')
           #---1  mskCV2.shape = (874, 1164)
-        mskCV2 = cv2.resize(mskCV2, (mask_W, mask_H))
+        mskCV2x = cv2.resize(mskCV2, (mask_W, mask_H)) # No Good: resize incorrectly on upper and lower parts
           #---2  mskCV2.shape = (256, 512)
-        mskCV2 = np.stack([(mskCV2 == v) for v in class_values], axis=-1).astype('uint8')
+        mskCV2y = np.zeros((384, 512), dtype=np.uint8) # np.uint8 = 0~255
+        mskCV2y = transform_img(mskCV2, from_intr=eon_intrinsics, to_intr=medmodel_intrinsics,
+                             yuv=False, output_size=(512, 256)) # (W, H)
+        mskCV2 = np.stack([(mskCV2y == v) for v in class_values], axis=-1).astype('uint8')
           #---3  mskCV2.shape = (256, 512, 6)
+        plt.clf()
+        plt.subplot(121)
+        plt.title("mskCV2x: No Good")
+        plt.imshow(mskCV2x)
+        plt.subplot(122)
+        plt.title("mskCV2y: OK")
+        plt.imshow(mskCV2y)
+        plt.show()
     else:
         print('#---datagenA5  Error: image.png or mask.png does not exist')
 
