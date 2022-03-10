@@ -1,4 +1,4 @@
-'''  JHT, JLL, 2022.1.23 - 2.19
+'''  JHT, JLL, 2022.1.23 - 3.10
 from /home/jinn/YPN/TangJH/combineA4h5/hevc2yuvh5A4.py
 
 Input: bRGB images *.png
@@ -15,12 +15,15 @@ from matplotlib import pyplot as plt
 from cameraB5 import transform_img, eon_intrinsics, medmodel_intrinsics
 
 def RGB_to_sYUV(img):
-    bYUV = cv2.cvtColor(img, cv2.COLOR_RGB2YUV_I420)
+    #bYUV = cv2.cvtColor(img, cv2.COLOR_RGB2YUV_I420)
+    bYUV = cv2.cvtColor(img, cv2.COLOR_BGR2YUV_I420)   # BGR is slightly different from RGB
       #---  np.shape(bYUV) = (1311, 1164)
       #print("#---  bYUV =", bYUV)   # check YUV: [0, 255]? Yes.
     sYUV = np.zeros((384, 512), dtype=np.uint8) # np.uint8 = 0~255
     sYUV = transform_img(bYUV, from_intr=eon_intrinsics, to_intr=medmodel_intrinsics,
                          yuv=True, output_size=(512, 256))  # (W, H)
+    #sYUV = transform_img(img, from_intr=eon_intrinsics, to_intr=medmodel_intrinsics,
+                          #output_size=(512, 256))  # from img to sYUV
     plt.clf()
     plt.subplot(131)
     plt.title("RGB Image 874x1164")
